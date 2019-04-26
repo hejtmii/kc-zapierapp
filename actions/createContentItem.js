@@ -1,6 +1,6 @@
-const languageCodeField = require('../fields/languageCode');
-const contentTypeField = require('../fields/contentType');
-const getItemElementFields = require('../fields/getItemElementFields');
+const getLanguageField = require('../fields/getLanguageField');
+const getContentTypeField = require('../fields/getContentTypeField');
+const getItemElementFields = require('../fields/elements/getItemElementFields');
 const createItem = require('./createItem');
 const createVariant = require('./createVariant');
 
@@ -58,8 +58,8 @@ const createContentItem = {
     operation: {
         perform: execute,
         inputFields: [
-            languageCodeField,
-            contentTypeField,
+            getLanguageField({ required: true }),
+            getContentTypeField({ required: true, altersDynamicFields: true }),
             itemNameField,
             externalIdField,
             elementsInfoField,

@@ -1,5 +1,5 @@
-const handleErrors = require('../utils/handleErrors');
-const getContentType = require('../utils/getContentType');
+const handleErrors = require('../../utils/handleErrors');
+const getContentType = require('../../utils/getContentType');
 
 async function getContentTypeElements(z, bundle, contentType) {
     if (!contentType) {

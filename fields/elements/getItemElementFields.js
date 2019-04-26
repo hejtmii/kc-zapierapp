@@ -6,7 +6,7 @@ async function getItemElementFields(z, bundle, contentType) {
         const base = {
             key: `elements__${element.codename}`,
             label: element.name,
-            help_text: element.guidelines
+            helpText: element.guidelines
         };
 
         return Object.assign(base, extra);

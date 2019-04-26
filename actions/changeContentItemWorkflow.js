@@ -12,7 +12,7 @@ async function getWorkflowSteps(z, bundle) {
     }
 
     const response = await z.request(options);
-    response.throwForStatus();
+    handleErrors(response);
 
     const results = z.JSON.parse(response.content);
     return results;
@@ -134,7 +134,7 @@ async function execute(z, bundle) {
                 'Authorization': `Bearer ${bundle.authData.cm_api_key}`
             },
             params: {},
-        }
+        };
 
         const response = await z.request(options);
         handleErrors(response);
@@ -239,7 +239,7 @@ async function getScheduledPublishingFields(z, bundle) {
             type: 'datetime',
             key: 'publish_date',
             label: 'To be published on',
-            help_text: 'In case the publishing time is in the past, the content item gets published immediately.',
+            helpText: 'In case the publishing time is in the past, the content item gets published immediately.',
             required: true
         }];
     }

@@ -1,4 +1,4 @@
-const handleErrors = require('../utils/handleErrors');
+const handleErrors = require('../../utils/handleErrors');
 
 async function execute(z, bundle) {
     const options = {
@@ -11,7 +11,7 @@ async function execute(z, bundle) {
         params: {}
     };
 
-    const response = z.request(options);
+    const response = await z.request(options);
     handleErrors(response);
 
     const results = z.JSON.parse(response.content);

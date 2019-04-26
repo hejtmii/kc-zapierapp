@@ -1,4 +1,4 @@
-const handleErrors = require('../utils/handleErrors');
+const handleErrors = require('../../utils/handleErrors');
 
 async function execute(z, bundle) {
     const options = {
@@ -18,7 +18,6 @@ async function execute(z, bundle) {
 
     const results = z.JSON.parse(response.content).types;
 
-    // You can do any parsing you need for results here before returning them
     const resultsWithId = results.map(
         (item) => Object.assign(
             item,
@@ -32,7 +31,7 @@ async function execute(z, bundle) {
 }
 
 module.exports = {
-    key: 'get_content_type_choices',
+    key: 'get_content_types',
     noun: 'Content type choice',
     display: {
         label: 'Get Content type choices',

@@ -1,27 +1,11 @@
 const endpointField = require('../fields/endpoint');
-const languageCodeField = require('../fields/languageCode');
-const contentTypeField = require('../fields/contentType');
-const getElementOutputFields = require('../fields/getElementOutputFields');
-const itemFilterFields = require('../fields/itemFilterFields');
+const getLanguageField = require('../fields/getLanguageField');
+const getContentTypeField = require('../fields/getContentTypeField');
+const getElementOutputFields = require('../fields/elements/getElementOutputFields');
+const itemFilterFields = require('../fields/filters/itemFilterFields');
+const itemDetectFields = require('../fields/filters/itemDetectFields');
 const getContentItems = require('../utils/getContentItems');
-
-const detectInfoField = {
-    label: 'Detect info',
-    key: 'detect_info',
-    helpText: `## Changes to detect
-
-You can optionally detect only changes to a particular field by selecting the field below.`,
-    type: 'copy',
-};
-
-const detectFieldField = {
-    label: 'Detect changes of field',
-    key: 'detect_field',
-    helpText: 'Select a field that should be observed for changes. If none is selected, any change will be detected.',
-    type: 'string',
-    required: false,
-    dynamic: 'get_item_filter_field_choices.value.label',
-};
+const standardizedSystemOutputFields = require('../utils/standardized/standardizedSystemOutputFields');
 
 function getDetectionValue(item, detectField) {
     if (!detectField) {
@@ -35,7 +19,8 @@ function getDetectionValue(item, detectField) {
         value = value[fieldParts[i]];
     }
 
-    return value;
+    // Value may be structured (e.g. array, so we convert it to JSON to be able to hash it)
+    return JSON.stringify(value);
 }
 
 async function execute(z, bundle) {
@@ -46,11 +31,12 @@ async function execute(z, bundle) {
     const contentType = bundle.inputData.content_type;
 
     const filterField = bundle.inputData.filter_field;
+    const filterPattern = bundle.inputData.filter_pattern;
     const filterValue = bundle.inputData.filter_value;
 
-    const detectField = bundle.inputData.detect_value;
+    const detectField = bundle.inputData.detect_field;
 
-    const results = await getContentItems(z, bundle, endpoint, language, contentType, filterField, filterValue);
+    const results = await getContentItems(z, bundle, endpoint, language, contentType, filterField, filterPattern, filterValue);
 
     const resultsWithId = results.map(
         (item) => Object.assign(
@@ -67,7 +53,7 @@ async function execute(z, bundle) {
 
 module.exports = {
     key: 'update_item',
-    noun: 'Updated Content item',
+    noun: 'Content item',
     display: {
         label: 'Content Item Updated',
         description: 'Triggers when a content item is created or updated.',
@@ -78,62 +64,28 @@ module.exports = {
         type: 'polling',
         inputFields: [
             endpointField,
-            languageCodeField,
-            contentTypeField,
+            getLanguageField(),
+            getContentTypeField({ altersDynamicFields: true }),
             ...itemFilterFields,
-            detectInfoField,
-            detectFieldField,
+            ...itemDetectFields,
         ],
         perform: execute,
         sample: {
-            "elements": {},
-            "system": {
-                "name": "Article to zap through to JIRA",
-                "language": "en-US",
-                "sitemap_locations": [],
-                "last_modified": "2019-03-15T13:45:27.0956286Z",
-                "codename": "article_to_zap_through_to_jira",
-                "type": "article",
-                "id": "2d42e460-1fb7-4bcc-9514-23a462e370db"
+            'elements': {},
+            'system': {
+                'projectId': '471f9f4c-4f97-009b-a0b8-79db2558e63f',
+                'name': 'On Roasts',
+                'language': 'en-US',
+                'last_modified': '2019-03-15T13:45:27.0956286Z',
+                'codename': 'on_roasts',
+                'type': 'article',
+                'id': '2d42e460-1fb7-4bcc-9514-23a462e370db',
+                'full_id': '2d42e460-1fb7-4bcc-9514-23a462e370db/en-US',
             },
-            "id": "2d42e460-1fb7-4bcc-9514-23a462e370db_2019-03-15T13:45:27.0956286Z"
+            id: '77963b7a931377ad4ab5ad6a9cd718aa',
         },
         outputFields: [
-            {
-                key: 'system__name',
-                label: 'Item name',
-                type: 'string',
-            },
-            {
-                key: 'system__language',
-                label: 'Language code',
-                type: 'string',
-            },
-            {
-                key: 'system__last_modified',
-                label: 'Last modified',
-                type: 'string',
-            },
-            {
-                key: 'system__codename',
-                label: 'Item codename',
-                type: 'string',
-            },
-            {
-                key: 'system__type',
-                label: 'Content type codename',
-                type: 'string',
-            },
-            {
-                key: 'system__id',
-                label: 'Item ID',
-                type: 'string',
-            },
-            {
-                key: 'projectId',
-                label: 'Project ID',
-                type: 'string',
-            },
+            ...standardizedSystemOutputFields,
             async function (z, bundle) {
                 return await getElementOutputFields(z, bundle, bundle.inputData.content_type);
             }

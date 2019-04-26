@@ -1,27 +1,27 @@
 const endpointField = require('../fields/endpoint');
-const languageCodeField = require('../fields/languageCode');
-const contentTypeField = require('../fields/contentType');
-const getElementOutputFields = require('../fields/getElementOutputFields');
-const itemFilterFields = require('../fields/itemFilterFields');
+const getLanguageField = require('../fields/getLanguageField');
+const getContentTypeField = require('../fields/getContentTypeField');
+const getElementOutputFields = require('../fields/elements/getElementOutputFields');
+const itemFilterFields = require('../fields/filters/itemFilterFields');
 const getContentItems = require('../utils/getContentItems');
+const standardizedSystemOutputFields = require('../utils/standardized/standardizedSystemOutputFields');
 
 async function execute(z, bundle) {
     const endpoint = bundle.inputData.endpoint;
-    const projectId = bundle.authData.project_id;
 
     const language = bundle.inputData.language;
     const contentType = bundle.inputData.content_type;
 
     const filterField = bundle.inputData.filter_field;
+    const filterPattern = bundle.inputData.filter_pattern;
     const filterValue = bundle.inputData.filter_value;
 
-    const results = await getContentItems(z, bundle, endpoint, language, contentType, filterField, filterValue);
+    const results = await getContentItems(z, bundle, endpoint, language, contentType, filterField, filterPattern, filterValue);
 
     const resultsWithId = results.map(
         (item) => Object.assign(
             item,
             {
-                projectId,
                 id: item.system.id
             }
         )
@@ -32,10 +32,10 @@ async function execute(z, bundle) {
 
 module.exports = {
     key: 'create_item',
-    noun: 'Created Content item',
+    noun: 'Content item',
     display: {
-        label: 'Content Item Created',
-        description: 'Triggers when a new content item is created.',
+        label: 'New Content Item',
+        description: 'Triggers when a new content item is created or published.',
         important: true,
         hidden: false
     },
@@ -43,60 +43,27 @@ module.exports = {
         type: 'polling',
         inputFields: [
             endpointField,
-            languageCodeField,
-            contentTypeField,
+            getLanguageField(),
+            getContentTypeField({ altersDynamicFields: true }),
             ...itemFilterFields,
         ],
         perform: execute,
         sample: {
-            "elements": {},
-            "system": {
-                "name": "Article to zap through to JIRA",
-                "language": "en-US",
-                "sitemap_locations": [],
-                "last_modified": "2019-03-15T13:45:27.0956286Z",
-                "codename": "article_to_zap_through_to_jira",
-                "type": "article",
-                "id": "2d42e460-1fb7-4bcc-9514-23a462e370db"
+            'elements': {},
+            'system': {
+                'projectId': '471f9f4c-4f97-009b-a0b8-79db2558e63f',
+                'name': 'On Roasts',
+                'language': 'en-US',
+                'last_modified': '2019-03-15T13:45:27.0956286Z',
+                'codename': 'on_roasts',
+                'type': 'article',
+                'id': '2d42e460-1fb7-4bcc-9514-23a462e370db',
+                'full_id': '2d42e460-1fb7-4bcc-9514-23a462e370db/en-US',
             },
-            "id": "2d42e460-1fb7-4bcc-9514-23a462e370db_2019-03-15T13:45:27.0956286Z"
+            'id': '2d42e460-1fb7-4bcc-9514-23a462e370db',
         },
         outputFields: [
-            {
-                key: 'system__name',
-                label: 'Item name',
-                type: 'string',
-            },
-            {
-                key: 'system__language',
-                label: 'Language code',
-                type: 'string',
-            },
-            {
-                key: 'system__last_modified',
-                label: 'Last modified',
-                type: 'string',
-            },
-            {
-                key: 'system__codename',
-                label: 'Item codename',
-                type: 'string',
-            },
-            {
-                key: 'system__type',
-                label: 'Content type codename',
-                type: 'string',
-            },
-            {
-                key: 'system__id',
-                label: 'Item ID',
-                type: 'string',
-            },
-            {
-                key: 'projectId',
-                label: 'Project ID',
-                type: 'string',
-            },
+            ...standardizedSystemOutputFields,
             async function (z, bundle) {
                 return await getElementOutputFields(z, bundle, bundle.inputData.content_type);
             }

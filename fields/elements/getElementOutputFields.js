@@ -7,11 +7,13 @@ async function getElementOutputFields(z, bundle, contentType) {
     }
 
     const elements = await getContentTypeElements(z, bundle, contentType);
-    const fields = elements.map(element => ({
-        label: element.name,
-        key: `elements__${element.codename}__value`,
-        type: getElementFieldType(element.type),
-    }));
+    const fields = elements
+        .filter(element => element.type !== 'guidelines')
+        .map(element => ({
+            label: element.name,
+            key: `elements__${element.codename}`,
+            type: getElementFieldType(element.type),
+        }));
 
     return fields;
 }

@@ -3,11 +3,9 @@ const authentication = require('./authentication');
 const contentItemUpdated = require('./triggers/contentItemUpdated');
 const contentItemCreated = require('./triggers/contentItemCreated');
 
-const getContentItems = require('./triggers/getContentItems');
-const getWorkflowSteps = require('./triggers/getWorkflowSteps');
-
-const getItemFilterFieldChoices = require('./fields/getItemFilterFieldChoices');
-const getContentTypeChoices = require('./fields/getContentTypeChoices');
+const getContentItems = require('./triggers/dropdowns/getContentItems');
+const getWorkflowSteps = require('./triggers/dropdowns/getWorkflowSteps');
+const getContentTypes = require('./triggers/dropdowns/getContentTypes');
 
 const findContentItem = require('./searches/findContentItem');
 const findWorkflowStep = require('./searches/findWorkflowStep');
@@ -35,8 +33,9 @@ const App = {
     triggers: {
         [contentItemUpdated.key]: contentItemUpdated,
         [contentItemCreated.key]: contentItemCreated,
-        [getContentTypeChoices.key]: getContentTypeChoices,
-        [getItemFilterFieldChoices.key]: getItemFilterFieldChoices,
+
+        // Lists for dropdowns
+        [getContentTypes.key]: getContentTypes,
         [getContentItems.key]: getContentItems,
         [getWorkflowSteps.key]: getWorkflowSteps,
     },
@@ -55,12 +54,12 @@ const App = {
 
     searchOrCreates: {
         find_item: {
-            search: "find_item",
-            create: "create_item",
-            key: "find_item",
+            search: 'find_item',
+            create: 'create_item',
+            key: 'find_item',
             display: {
-                "description": "Finds a Content item matching the provided parameters. If more items match, it returns the first found item.",
-                "label": "Find or Create Content item"
+                'description': 'Finds a Content item matching the provided parameters. If more items match, it returns the first found item.',
+                'label': 'Find or Create Content item'
             }
         }
     }

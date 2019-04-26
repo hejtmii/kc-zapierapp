@@ -1,5 +1,5 @@
 const handleErrors = require('../utils/handleErrors');
-const getContentTypeElements = require('../fields/getContentTypeElements');
+const getContentTypeElements = require('../fields/elements/getContentTypeElements');
 
 function getElementValue(value, element) {
     switch (element.type) {
@@ -57,7 +57,7 @@ async function getElements(z, bundle, contentType) {
 async function createVariant(z, bundle, itemId, language, contentType) {
     const elements = await getElements(z, bundle, contentType);
 
-    const variantRequest = {
+    const options = {
         url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/items/${itemId}/variants/codename/${language}`,
         method: 'PUT',
         headers: {
@@ -71,7 +71,7 @@ async function createVariant(z, bundle, itemId, language, contentType) {
         }
     };
 
-    const variantResponse = await z.request(variantRequest);
+    const variantResponse = await z.request(options);
     handleErrors(variantResponse);
 
     const variant = z.JSON.parse(variantResponse.content);

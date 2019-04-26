@@ -1,7 +1,7 @@
 const handleErrors = require('../utils/handleErrors');
 
 async function createItem(z, bundle, name, contentType, externalId) {
-    const itemRequest = {
+    const options = {
         url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/items`,
         method: 'POST',
         headers: {
@@ -19,7 +19,7 @@ async function createItem(z, bundle, name, contentType, externalId) {
         }
     };
 
-    const itemResponse = await z.request(itemRequest);
+    const itemResponse = await z.request(options);
     handleErrors(itemResponse);
 
     const item = z.JSON.parse(itemResponse.content);

@@ -1,17 +1,10 @@
 const handleErrors = require('./handleErrors');
+const getFilterParams = require('./getFilterParams');
+const standardizeDeliveryItem = require('./standardized/standardizeDeliveryItem');
 
-function getFilter(filterField, filterValue) {
-    if (!filterField) {
-        return {};
-    }
+async function getContentItems(z, bundle, endpoint, languageCode, contentType, filterField, filterPattern, filterValue) {
+    const filterParams = getFilterParams(filterField, filterPattern, filterValue);
 
-    const filter = {};
-    filter[filterField] = filterValue;
-
-    return filter;
-}
-
-async function getContentItems(z, bundle, endpoint, languageCode, contentType, filterField, filterValue) {
     const options = {
         url: `https://${endpoint}/${bundle.authData.project_id}/items`,
         method: 'GET',
@@ -20,12 +13,15 @@ async function getContentItems(z, bundle, endpoint, languageCode, contentType, f
             'Authorization': `Bearer ${bundle.authData.preview_api_key}`
         },
         params: Object.assign(
-            { 'order': 'system.last_modified[desc]' },
+            {
+                'order': 'system.last_modified[desc]',
+                'depth': 0,
+            },
             contentType && { 'system.type': contentType },
             languageCode && { 'language': languageCode },
             // No language fallbacks
             languageCode && { 'system.language': languageCode },
-            getFilter(filterField, filterValue)
+            filterParams,
         )
     };
 
@@ -33,8 +29,9 @@ async function getContentItems(z, bundle, endpoint, languageCode, contentType, f
     handleErrors(response);
 
     const results = z.JSON.parse(response.content).items;
+    const standardizedResults = results.map(item => standardizeDeliveryItem(bundle, item));
 
-    return results;
+    return standardizedResults;
 }
 
 module.exports = getContentItems;

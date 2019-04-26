@@ -1,7 +1,7 @@
 const handleErrors = require('./handleErrors');
 
 async function getContentType(z, bundle, contentType) {
-    var request = {
+    var options = {
         'method': 'GET',
         'url': `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/types/codename/${contentType}`,
         'params': {},
@@ -11,7 +11,7 @@ async function getContentType(z, bundle, contentType) {
         }
     };
 
-    const response = await z.request(request);
+    const response = await z.request(options);
     handleErrors(response);
 
     const results = z.JSON.parse(response.content);

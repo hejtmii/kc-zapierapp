@@ -1,4 +1,4 @@
-const handleErrors = require('../utils/handleErrors');
+const handleErrors = require('../../utils/handleErrors');
 
 async function execute(z, bundle) {
     const options = {
@@ -10,6 +10,7 @@ async function execute(z, bundle) {
         },
         params: {
             'order': 'system.name[asc]',
+            'depth': 0,
             'limit': 10,
             'skip': 10 * bundle.meta.page,
             'elements': '_' // Elements do not support empty value as "no elements" so we hack it like this
@@ -21,7 +22,6 @@ async function execute(z, bundle) {
 
     const results = z.JSON.parse(response.content).items;
 
-    // You can do any parsing you need for results here before returning them
     const resultsWithId = results.map(
         (item) => Object.assign(
             item,

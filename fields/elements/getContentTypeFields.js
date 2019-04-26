@@ -7,7 +7,7 @@ async function getContentTypeFields(z, bundle, contentType) {
         const base = {
             key: `elements__${element.codename}`,
             label: element.name,
-            help_text: element.guidelines,
+            helpText: element.guidelines,
             type: getElementFieldType(element.type),
         };
 
