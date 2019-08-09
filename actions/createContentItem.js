@@ -64,7 +64,7 @@ const createContentItem = {
             externalIdField,
             elementsInfoField,
             async function (z, bundle) {
-                return await getItemElementFields(z, bundle, bundle.itemData.content_type);
+                return await getItemElementFields(z, bundle, bundle.inputData.content_type);
             }
         ]
     },

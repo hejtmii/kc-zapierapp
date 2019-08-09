@@ -3,8 +3,9 @@ function getLanguageField(extras) {
         {
             label: 'Language codename',
             key: 'language',
-            helpText: 'Language codename as shown in [Kentico Cloud admin UI](https://app.kenticocloud.com) Project settings > Localization. The value is case-sensitive.',
+            helpText: 'Select language',
             type: 'string',
+            dynamic: 'get_languages.codename.name',
         },
         extras || {},
     );

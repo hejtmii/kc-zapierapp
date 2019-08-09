@@ -6,6 +6,7 @@ const contentItemCreated = require('./triggers/contentItemCreated');
 const getContentItems = require('./triggers/dropdowns/getContentItems');
 const getWorkflowSteps = require('./triggers/dropdowns/getWorkflowSteps');
 const getContentTypes = require('./triggers/dropdowns/getContentTypes');
+const getLanguages = require('./triggers/dropdowns/getLanguages');
 
 const findContentItem = require('./searches/findContentItem');
 const findWorkflowStep = require('./searches/findWorkflowStep');
@@ -38,6 +39,7 @@ const App = {
         [getContentTypes.key]: getContentTypes,
         [getContentItems.key]: getContentItems,
         [getWorkflowSteps.key]: getWorkflowSteps,
+        [getLanguages.key]: getLanguages,
     },
 
     // If you want your searches to show up, you better include it here!

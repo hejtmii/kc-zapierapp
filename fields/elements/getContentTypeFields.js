@@ -8,6 +8,7 @@ async function getContentTypeFields(z, bundle, contentType) {
             key: `elements__${element.codename}`,
             label: element.name,
             helpText: element.guidelines,
+            required: element.is_required,
             type: getElementFieldType(element.type),
         };
 
