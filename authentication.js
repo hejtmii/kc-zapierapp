@@ -3,27 +3,29 @@ const handleErrors = require('./utils/handleErrors');
 async function execute(z, bundle) {
     async function checkCmApi() {
         const options = {
-            url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/types`,
+            url: `https://manage.kontent.ai/v2/projects/${bundle.authData.projectId}`,
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${bundle.authData.cm_api_key}`,
+                'Authorization': `Bearer ${bundle.authData.cmApiKey}`,
             },
         };
 
         const response = await z.request(options);
         handleErrors(response);
 
-        return true;
+        const info = z.JSON.parse(response.content);
+
+        return info;
     }
 
     async function checkPreviewApi() {
         const options = {
-            url: `https://preview-deliver.kenticocloud.com/${bundle.authData.project_id}/types`,
+            url: `https://preview-deliver.kontent.ai/${bundle.authData.projectId}/types`,
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${bundle.authData.preview_api_key}`,
+                'Authorization': `Bearer ${bundle.authData.previewApiKey}`,
             },
         };
 
@@ -33,37 +35,17 @@ async function execute(z, bundle) {
         return true;
     }
 
-    async function getProjectName() {
-        const options = {
-            url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/validate`,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${bundle.authData.cm_api_key}`,
-            },
-        };
-
-        const response = await z.request(options);
-        handleErrors(response);
-
-        const results = z.JSON.parse(response.content);
-
-        return results.project.name;
-    }
-
     async function checkConnection() {
+        const projectInfo = checkCmApi();
         const previewApi = checkPreviewApi();
-        const projectName = getProjectName();
-        //const cmApi = checkCmApi();
 
         const results = await Promise.all([
-            projectName,
+            projectInfo,
             previewApi,
-            //cmApi,
         ]);
 
         return {
-            projectName: results[0],
+            projectName: results[0].name,
         };
     }
 
@@ -77,28 +59,28 @@ const Authentication = {
     test: execute,
     fields: [
         {
-            label: 'Kentico Cloud Project ID',
-            key: 'project_id',
+            label: 'Kentico Kontent Project ID',
+            key: 'projectId',
             type: 'string',
             required: true,
-            helpText: 'Your project ID is available in the [Kentico Cloud admin UI](https://app.kenticocloud.com) in Project Settings > API Keys.'
+            helpText: 'Your project ID is available in the [Kentico Kontent admin UI](https://app.kontent.ai) in Project Settings > API Keys.'
         },
         {
             label: 'Content Management API Key',
-            key: 'cm_api_key',
+            key: 'cmApiKey',
             type: 'string',
             required: true,
-            helpText: 'The Content Management API key is needed for Content item actions and is available in the [Kentico Cloud admin UI](https://app.kenticocloud.com) in Project Settings > API Keys.'
+            helpText: 'The Content Management API key is needed for Content item actions and is available in the [Kentico Kontent admin UI](https://app.kontent.ai) in Project Settings > API Keys.'
         },
         {
             label: 'Delivery Preview API Key',
-            key: 'preview_api_key',
+            key: 'previewApiKey',
             type: 'string',
             required: true,
-            helpText: 'The Preview API key is needed for Content item triggers and is available in the [Kentico Cloud admin UI](https://app.kenticocloud.com) in Project Settings > API Keys.'
+            helpText: 'The Preview API key is needed for Content item triggers and is available in the [Kentico Kontent admin UI](https://app.kontent.ai) in Project Settings > API Keys.'
         }
     ],
-    connectionLabel: '{{projectName}} - {{bundle.authData.project_id}}'
+    connectionLabel: '{{projectName}} - {{bundle.authData.projectId}}'
 };
 
 module.exports = Authentication;

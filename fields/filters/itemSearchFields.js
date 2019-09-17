@@ -4,19 +4,19 @@ const { ElementsPrefix, SystemPrefix } = require ('../constants');
 
 const searchInfo = {
     label: 'Search info',
-    key: 'search_info',
+    key: 'searchInfo',
     helpText: `### Search by field
     
 You can search the item by a particular field value.`,
     type: 'copy',
 };
 
-async function getSearchField(z, bundle, contentType) {
-    const elements = await getContentTypeElements(z, bundle, contentType);
+async function getSearchField(z, bundle, contentTypeId) {
+    const elements = await getContentTypeElements(z, bundle, contentTypeId);
     const choices = [
-        { value: 'id', label: 'Item ID' },
-        { value: 'external_id', label: 'External ID' },
-        { value: `${SystemPrefix}codename`, label: 'Code name' }
+        { value: 'id', sample: 'id', label: 'Item ID' },
+        { value: 'externalId', sample: 'externalId', label: 'External ID' },
+        { value: `${SystemPrefix}codename`, sample: `${SystemPrefix}codename`, label: 'Code name' }
     ];
 
     for (var i = 0; i < elements.length; i++) {
@@ -31,13 +31,17 @@ async function getSearchField(z, bundle, contentType) {
             case 'taxonomy':
 
             case 'number':
-                choices.push({ value: `${ElementsPrefix}${element.codename}`, label: element.name });
+                choices.push({
+                    value: `${ElementsPrefix}${element.codename}`,
+                    sample: `${ElementsPrefix}${element.codename}`,
+                    label: element.name
+                });
         }
     }
 
     return [{
         label: 'Search field',
-        key: 'search_field',
+        key: 'searchField',
         helpText: 'Select the field based on which the item should be found.',
         required: true,
         choices,
@@ -46,15 +50,15 @@ async function getSearchField(z, bundle, contentType) {
 }
 
 const searchField = async function (z, bundle) {
-    return await getSearchField(z, bundle, bundle.inputData.content_type);
+    return await getSearchField(z, bundle, bundle.inputData.contentTypeId);
 };
 
-async function getSearchOperator(z, bundle, contentType, searchField) {
-    const choices = await getOperatorChoices(z, bundle, contentType, searchField);
+async function getSearchOperator(z, bundle, contentTypeId, searchField) {
+    const choices = await getOperatorChoices(z, bundle, contentTypeId, searchField);
 
     return [{
         label: 'Search operator',
-        key: 'search_pattern',
+        key: 'searchPattern',
         helpText: 'Select how the search value should be matched.',
         required: true,
         choices,
@@ -64,12 +68,12 @@ async function getSearchOperator(z, bundle, contentType, searchField) {
 }
 
 const searchOperator = async function (z, bundle) {
-    return await getSearchOperator(z, bundle, bundle.inputData.content_type, bundle.inputData.search_field);
+    return await getSearchOperator(z, bundle, bundle.inputData.contentTypeId, bundle.inputData.searchField);
 };
 
 const searchValue = {
     label: "Search value",
-    key: "search_value",
+    key: "searchValue",
     helpText: "Value to match in the search field. The value must match exactly.",
     type: "string",
     required: true,

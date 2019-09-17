@@ -1,11 +1,10 @@
 function getLanguageField(extras) {
     return Object.assign(
         {
-            label: 'Language codename',
-            key: 'language',
-            helpText: 'Select language',
+            label: 'Language',
+            key: 'languageId',
             type: 'string',
-            dynamic: 'get_languages.codename.name',
+            dynamic: 'get_languages.id.name',
         },
         extras || {},
     );

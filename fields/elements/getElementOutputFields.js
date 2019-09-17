@@ -1,19 +1,23 @@
 const getContentTypeElements = require('./getContentTypeElements');
-const getElementFieldType = require('./getElementFieldType');
+const getElementFieldProps = require('./getElementFieldProps');
 
-async function getElementOutputFields(z, bundle, contentType) {
-    if (!contentType) {
+async function getElementOutputFields(z, bundle, contentTypeId) {
+    if (!contentTypeId) {
         return [];
     }
 
-    const elements = await getContentTypeElements(z, bundle, contentType);
+    const elements = await getContentTypeElements(z, bundle, contentTypeId);
     const fields = elements
         .filter(element => element.type !== 'guidelines')
-        .map(element => ({
-            label: element.name,
-            key: `elements__${element.codename}`,
-            type: getElementFieldType(element.type),
-        }));
+        .map(element => {
+            const baseProps = {
+                label: element.name,
+                key: `elements__${element.codename}`,
+            };
+            const typeProps = getElementFieldProps(element);
+
+            return Object.assign(baseProps, typeProps);
+        });
 
     return fields;
 }

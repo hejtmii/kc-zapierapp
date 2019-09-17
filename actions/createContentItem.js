@@ -1,8 +1,12 @@
 const getLanguageField = require('../fields/getLanguageField');
 const getContentTypeField = require('../fields/getContentTypeField');
 const getItemElementFields = require('../fields/elements/getItemElementFields');
-const createItem = require('./createItem');
-const createVariant = require('./createVariant');
+const createItem = require('../utils/items/create/createItem');
+const createVariant = require('../utils/items/create/createVariant');
+const findItemByIdentifier = require('../utils/items/get/findItemByIdentifier');
+const getItemResult = require('../utils/items/get/getItemResult');
+const contentItemSample = require('../fields/contentItemSample');
+const contentItemOutputFields = require('../fields/contentItemOutputFields');
 
 const itemNameField = {
     required: true,
@@ -15,8 +19,8 @@ const itemNameField = {
 const externalIdField = {
     required: false,
     label: "External ID",
-    helpText: "Any unique identifier for the item in the external system. Can be used to link the content item for future updates. [Read more about external ID ...](https://developer.kenticocloud.com/v1/reference#content-management-api-reference-by-external-id)",
-    key: "external_identifier",
+    helpText: "Any unique identifier for the item in the external system. Can be used to link the content item for future updates. [Read more about external ID ...](https://developer.kontent.ai/v1/reference#content-management-api-reference-by-external-id)",
+    key: "externalId",
     type: "string",
 };
 
@@ -24,35 +28,40 @@ const elementsInfoField = {
     label: "Elements",
     helpText: `#### Content item variant elements
                 
-The following inputs represent elements of a chosen content type as defined in Kentico Cloud. Element data is stored per language version.
+The following inputs represent elements of a chosen content type as defined in Kentico Konent. Element data is stored per language version.
 
-[Read more about elements ...](https://docs.kenticocloud.com/tutorials/define-content-structure/content-elements/content-type-elements-reference)`,
+[Read more about elements ...](https://docs.kontent.ai/tutorials/define-content-structure/content-elements/content-type-elements-reference)`,
     key: "elements_header",
     type: "copy",
 };
 
 async function execute(z, bundle) {
     const name = bundle.inputData.name;
-    const contentType = bundle.inputData.content_type;
-    const language = bundle.inputData.language;
-    const externalId = bundle.inputData.external_identifier;
+    const contentTypeId = bundle.inputData.contentTypeId;
+    const languageId = bundle.inputData.languageId;
+    const externalId = bundle.inputData.externalId;
 
-    const item = await createItem(z, bundle, name, contentType, externalId);
-    const variant = await createVariant(z, bundle, item.id, language, contentType);
+    const searchField = bundle.inputData.searchField;
+    const searchValue = bundle.inputData.searchValue;
 
-    return {
-        item,
-        variant,
-    };
+    // Check existing content item item, it may be available through the find action
+    const existingItem = searchField && searchValue && await findItemByIdentifier(z, bundle, contentTypeId, searchField, searchValue);
+
+    const item = (existingItem && existingItem[0]) || await createItem(z, bundle, name, contentTypeId, externalId);
+    const variant = await createVariant(z, bundle, item.id, languageId, contentTypeId);
+
+    const result = getItemResult(z, bundle, item, variant);
+
+    return result;
 }
 
 const createContentItem = {
-    noun: "Content item",
+    noun: "New Content item",
     display: {
         hidden: false,
         important: true,
-        description: "Creates a content item and its language variant using Kentico Cloud Content Management API. The created item is not published, but only in a Draft workflow step.",
-        label: "Create Content Item"
+        description: "Creates a content item and its language variant using Kentico Kontent Content Management API. The created item is not published, but only in a Draft workflow step.",
+        label: "Create Content item"
     },
     key: "create_item",
     operation: {
@@ -64,9 +73,11 @@ const createContentItem = {
             externalIdField,
             elementsInfoField,
             async function (z, bundle) {
-                return await getItemElementFields(z, bundle, bundle.inputData.content_type);
+                return await getItemElementFields(z, bundle, bundle.inputData.contentTypeId);
             }
-        ]
+        ],
+        sample: contentItemSample,
+        outputFields: contentItemOutputFields,
     },
 };
 

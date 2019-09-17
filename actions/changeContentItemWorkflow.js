@@ -1,22 +1,8 @@
 const handleErrors = require('../utils/handleErrors');
-
-async function getWorkflowSteps(z, bundle) {
-    const options = {
-        url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/workflow`,
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${bundle.authData.cm_api_key}`
-        },
-        params: {}
-    }
-
-    const response = await z.request(options);
-    handleErrors(response);
-
-    const results = z.JSON.parse(response.content);
-    return results;
-}
+const getVariant = require('../utils/items/get/getVariant');
+const getWorkflowSteps = require('../utils/workflows/getWorkflowSteps');
+const getWorkflowStepField = require('../fields/getWorkflowStepField');
+const getContentItemField = require('../fields/getContentItemField');
 
 function isFirstWorkflowStep(stepId, workflowSteps) {
     const firstStep = workflowSteps[0];
@@ -30,41 +16,21 @@ function isPublishedWorkflowStep(stepId, workflowSteps) {
     return lastStep && (lastStep.id === stepId) && (lastStep.name === "Published");
 }
 
-function isScheduledWorkflowStep(stepId, workflowSteps) {
+function isScheduledWorkflowStep(workflowStepId, workflowSteps) {
     const nextToLastStep = workflowSteps[workflowSteps.length - 2];
 
-    return nextToLastStep && (nextToLastStep.id === stepId) && (nextToLastStep.name === "Scheduled");
+    return nextToLastStep && (nextToLastStep.id === workflowStepId) && (nextToLastStep.name === "Scheduled");
 }
 
 async function execute(z, bundle) {
-    async function getVariant(itemId, languageCode) {
+    async function createNewVersion(itemId, languageId) {
         const options = {
-            url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/items/${itemId}/variants/codename/${languageCode}`,
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${bundle.authData.cm_api_key}`
-            },
-            params: {},
-        };
-
-        const response = await z.request(options);
-        handleErrors(response);
-
-        const results = z.JSON.parse(response.content);
-
-        return results;
-    }
-
-    async function createNewVersion(itemId, languageCode) {
-        const options = {
-            url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/items/${itemId}/variants/codename/${languageCode}/new-version`,
+            url: `https://manage.kontent.ai/v2/projects/${bundle.authData.projectId}/items/${itemId}/variants/${languageId}/new-version`,
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${bundle.authData.cm_api_key}`
+                'Authorization': `Bearer ${bundle.authData.cmApiKey}`
             },
             params: {},
         };
@@ -73,14 +39,14 @@ async function execute(z, bundle) {
         handleErrors(response);
     }
 
-    async function publish(itemId, languageCode) {
+    async function publish(itemId, languageId) {
         const options = {
-            url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/items/${itemId}/variants/codename/${languageCode}/publish`,
+            url: `https://manage.kontent.ai/v2/projects/${bundle.authData.projectId}/items/${itemId}/variants/${languageId}/publish`,
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${bundle.authData.cm_api_key}`
+                'Authorization': `Bearer ${bundle.authData.cmApiKey}`
             },
             params: {},
         };
@@ -89,14 +55,14 @@ async function execute(z, bundle) {
         handleErrors(response);
     }
 
-    async function schedulePublishing(itemId, languageCode, publishDate) {
+    async function schedulePublishing(itemId, languageId, publishDate) {
         const options = {
-            url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/items/${itemId}/variants/codename/${languageCode}/publish`,
+            url: `https://manage.kontent.ai/v2/projects/${bundle.authData.projectId}/items/${itemId}/variants/${languageId}/publish`,
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${bundle.authData.cm_api_key}`
+                'Authorization': `Bearer ${bundle.authData.cmApiKey}`
             },
             params: {},
             body: {
@@ -108,30 +74,14 @@ async function execute(z, bundle) {
         handleErrors(response);
     }
 
-    async function cancelScheduling(itemId, languageCode) {
+    async function cancelScheduling(itemId, languageId) {
         const options = {
-            url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/items/${itemId}/variants/codename/${languageCode}/cancel-scheduled-publish`,
+            url: `https://manage.kontent.ai/v2/projects/${bundle.authData.projectId}/items/${itemId}/variants/${languageId}/cancel-scheduled-publish`,
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${bundle.authData.cm_api_key}`
-            },
-            params: {},
-        }
-
-        const response = await z.request(options);
-        handleErrors(response);
-    }
-
-    async function changeWorkflowStep(itemId, languageCode, stepId) {
-        const options = {
-            url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/items/${itemId}/variants/codename/${languageCode}/workflow/${stepId}`,
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${bundle.authData.cm_api_key}`
+                'Authorization': `Bearer ${bundle.authData.cmApiKey}`
             },
             params: {},
         };
@@ -140,24 +90,40 @@ async function execute(z, bundle) {
         handleErrors(response);
     }
 
-    async function setWorkflowStep(itemId, languageCode, stepId) {
-        const variant = await getVariant(itemId, languageCode);
+    async function changeWorkflowStep(itemId, languageId, workflowStepId) {
+        const options = {
+            url: `https://manage.kontent.ai/v2/projects/${bundle.authData.projectId}/items/${itemId}/variants/${languageId}/workflow/${workflowStepId}`,
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${bundle.authData.cmApiKey}`
+            },
+            params: {},
+        };
+
+        const response = await z.request(options);
+        handleErrors(response);
+    }
+
+    async function setWorkflowStep(itemId, languageId, workflowStepId) {
+        const variant = await getVariant(z, bundle, itemId, languageId);
         const workflowSteps = await getWorkflowSteps(z, bundle);
 
-        const targetIsScheduled = isScheduledWorkflowStep(stepId, workflowSteps);
+        const targetIsScheduled = isScheduledWorkflowStep(workflowStepId, workflowSteps);
 
         const currentStepId = variant.workflow_step.id;
-        if ((currentStepId === stepId) && !targetIsScheduled) {
+        if ((currentStepId === workflowStepId) && !targetIsScheduled) {
             // Already in that step (except for scheduled)
             return {message: "Content item is already in the requested workflow step"};
         }
 
-        const targetIsFirst = isFirstWorkflowStep(stepId, workflowSteps);
+        const targetIsFirst = isFirstWorkflowStep(workflowStepId, workflowSteps);
 
         const isPublished = isPublishedWorkflowStep(currentStepId, workflowSteps);
         if (isPublished) {
             // Create new version first
-            await createNewVersion(itemId, languageCode);
+            await createNewVersion(itemId, languageId);
             if (targetIsFirst) {
                 // New version ends up in first WF step
                 return {message: "New Draft version has been created"};
@@ -166,7 +132,7 @@ async function execute(z, bundle) {
             const isScheduled = isScheduledWorkflowStep(currentStepId, workflowSteps);
             if (isScheduled) {
                 // Cancel scheduling first
-                await cancelScheduling(itemId, languageCode);
+                await cancelScheduling(itemId, languageId);
                 if (targetIsFirst) {
                     // Cancelled scheduling ends up in first WF step
                     return {message: "Scheduling cancelled and content item has retuned to Draft"};
@@ -174,70 +140,72 @@ async function execute(z, bundle) {
             }
         }
 
-        const targetIsPublished = isPublishedWorkflowStep(stepId, workflowSteps);
+        const targetIsPublished = isPublishedWorkflowStep(workflowStepId, workflowSteps);
         if (targetIsPublished) {
-            await publish(itemId, languageCode);
+            await publish(itemId, languageId);
 
             return {message: "Content item has been published"};
         } else {
             if (targetIsScheduled) {
-                const publishDate = bundle.inputData.publish_date;
+                const publishDate = bundle.inputData.publishDate;
 
                 // If publish date is soon (within a minute from now) or in the past, we need to publish as scheduling may fail
 
                 //const isInPast = moment(publishDate).add(-1, 'm').isBefore();
                 const isInPast = new Date(publishDate).getTime() < new Date(new Date().toUTCString()).getTime()
                 if (isInPast) {
-                    await publish(itemId, languageCode);
+                    await publish(itemId, languageId);
 
                     return {message: "Content item has been published instead of scheduling in a moment"};
                 } else {
-                    await schedulePublishing(itemId, languageCode, publishDate);
+                    await schedulePublishing(itemId, languageId, publishDate);
 
                     return {message: "Content item has been scheduled to publishing"};
                 }
             } else {
-                await changeWorkflowStep(itemId, languageCode, stepId);
+                await changeWorkflowStep(itemId, languageId, workflowStepId);
 
                 return {message: "Content item workflow step has changed"};
             }
         }
+
+        return { success: true };
     }
 
-    // ID = "<item id>/<language_code>"
-    const compoundId = bundle.inputData.compound_item_id;
-    if (!compoundId) {
-        throw Error('Missing compound item ID');
+    // ID = "<item id>/<language id>"
+    const fullItemId = bundle.inputData.fullItemId;
+    if (!fullItemId) {
+        throw Error('Missing full item ID');
     }
 
-    const parsedId = compoundId.split('/');
+    const parsedId = fullItemId.split('/');
     const itemId = parsedId[0];
-    const languageCode = parsedId[1];
+    const languageId = parsedId[1];
 
-    if (!itemId || !languageCode) {
-        throw Error(`Compound item ID has to be in format "[item id]/[language code]", found "${compoundId}"`);
+    if (!itemId || !languageId) {
+        throw Error(`Full item ID has to be in format "[item id]/[language id]", found "${fullItemId}"`);
     }
 
-    const stepId = bundle.inputData.workflow_step_id;
-    if (!compoundId) {
+    const workflowStepId = bundle.inputData.workflowStepId;
+    if (!fullItemId) {
         throw Error('Missing target workflow step ID');
     }
 
-    const result = await setWorkflowStep(itemId, languageCode, stepId);
+    const result = await setWorkflowStep(itemId, languageId, workflowStepId);
 
     return result;
 }
 
 async function getScheduledPublishingFields(z, bundle) {
     const workflowSteps = await getWorkflowSteps(z, bundle);
-    const stepId = bundle.inputData.workflow_step_id;
+    const stepId = bundle.inputData.workflowStepId;
 
     const isScheduledSelected = isScheduledWorkflowStep(stepId, workflowSteps);
     if (isScheduledSelected) {
         // Only display the datetime field for Scheduled workflow step
         return [{
             type: 'datetime',
-            key: 'publish_date',
+            key: 'publishDate',
             label: 'To be published on',
             helpText: 'In case the publishing time is in the past, the content item gets published immediately.',
             required: true
@@ -248,7 +216,7 @@ async function getScheduledPublishingFields(z, bundle) {
 }
 
 const changeContentItemWorkflow = {
-    noun: "Content item",
+    noun: "Content item workflow change",
     display: {
         "hidden": false,
         "important": true,
@@ -259,30 +227,19 @@ const changeContentItemWorkflow = {
     operation: {
         perform: execute,
         inputFields: [
-            {
-                search: "find_item.id",
-                list: false,
-                required: false,
-                dynamic: "get_content_items.id.system__name",
-                label: "Content item",
-                helpText: "Select the content item to update.\n\nFor a custom value use compound content item id in a form of \"[item id]/[language code]\"",
-                key: "compound_item_id",
-                type: "string",
-                altersDynamicFields: false
-            },
-            {
-                search: "find_workflow_step.id",
-                list: false,
+            getContentItemField({
+                helpText: "Select the content item to update.\n\nFor a custom value use compound content item id in a form of \"[item id]/[language id]\"",
+            }),
+            getWorkflowStepField({
                 required: true,
-                dynamic: "get_workflow_steps.id.name",
-                label: "Set workflow step",
-                helpText: "Select a workflow step to which the content item should move.\n\n[More about workflow in Kentico Cloud ...](https://docs.kenticocloud.com/tutorials/collaborate-with-your-team/workflows/setting-up-a-workflow-for-your-content)",
-                key: "workflow_step_id",
-                type: "string",
-                altersDynamicFields: true
-            },
+                helpText: "Select a workflow step to which the content item should move.\n\n[More about workflow in Kentico Kontent ...](https://docs.kontent.ai/tutorials/collaborate-with-your-team/workflows/setting-up-a-workflow-for-your-content)",
+                search: "find_workflow_step.id",
+            }),
             getScheduledPublishingFields
-        ]
+        ],
+        sample: {
+            success: true,
+        },
     },
 };
 

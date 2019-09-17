@@ -1,8 +1,8 @@
 const handleErrors = require('../../utils/handleErrors');
-const getContentType = require('../../utils/getContentType');
+const getContentType = require('../../utils/types/getContentType');
 
-async function getContentTypeElements(z, bundle, contentType) {
-    if (!contentType) {
+async function getContentTypeElements(z, bundle, contentTypeId) {
+    if (!contentTypeId) {
         return [];
     }
 
@@ -38,11 +38,11 @@ async function getContentTypeElements(z, bundle, contentType) {
     async function getSnippetElements(snippetId, parentElement) {
         var request = {
             'method': 'GET',
-            'url': `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/snippets/${snippetId}`,
+            'url': `https://manage.kontent.ai/v2/projects/${bundle.authData.projectId}/snippets/${snippetId}`,
             'params': {},
             'headers': {
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${bundle.authData.cm_api_key}`
+                'Authorization': `Bearer ${bundle.authData.cmApiKey}`
             }
         };
 
@@ -54,7 +54,7 @@ async function getContentTypeElements(z, bundle, contentType) {
         return allSnippetElements;
     }
 
-    const type = await getContentType(z, bundle, contentType);
+    const type = await getContentType(z, bundle, contentTypeId);
     const allElements = await getAllElements(type.elements);
 
     return allElements;

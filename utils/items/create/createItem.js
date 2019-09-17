@@ -1,19 +1,19 @@
-const handleErrors = require('../utils/handleErrors');
+const handleErrors = require('../../handleErrors');
 
-async function createItem(z, bundle, name, contentType, externalId) {
+async function createItem(z, bundle, name, contentTypeId, externalId) {
     const options = {
-        url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/items`,
+        url: `https://manage.kontent.ai/v2/projects/${bundle.authData.projectId}/items`,
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': `Bearer ${bundle.authData.cm_api_key}`
+            'Authorization': `Bearer ${bundle.authData.cmApiKey}`
         },
         params: {},
         body: {
             name,
             type: {
-                codename: contentType
+                id: contentTypeId
             },
             externalId: externalId || undefined
         }

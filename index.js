@@ -1,7 +1,6 @@
 const authentication = require('./authentication');
 
-const contentItemUpdated = require('./triggers/contentItemUpdated');
-const contentItemCreated = require('./triggers/contentItemCreated');
+const workflowStatusChanged = require('./triggers/workflowStatusChanged');
 
 const getContentItems = require('./triggers/dropdowns/getContentItems');
 const getWorkflowSteps = require('./triggers/dropdowns/getWorkflowSteps');
@@ -32,8 +31,7 @@ const App = {
 
     // If you want your trigger to show up, you better include it here!
     triggers: {
-        [contentItemUpdated.key]: contentItemUpdated,
-        [contentItemCreated.key]: contentItemCreated,
+        [workflowStatusChanged.key]: workflowStatusChanged,
 
         // Lists for dropdowns
         [getContentTypes.key]: getContentTypes,

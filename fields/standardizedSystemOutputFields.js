@@ -6,11 +6,11 @@ const standardizedSystemOutputFields = [
     },
     {
         key: 'system__language',
-        label: 'Language code',
+        label: 'Language codename',
         type: 'string',
     },
     {
-        key: 'system__last_modified',
+        key: 'system__lastModified',
         label: 'Last modified',
         type: 'datetime',
     },
@@ -30,13 +30,33 @@ const standardizedSystemOutputFields = [
         type: 'string',
     },
     {
+        key: 'system__externalId',
+        label: 'Item external ID',
+        type: 'string',
+    },
+    {
         key: 'system__projectId',
         label: 'Project ID',
         type: 'string',
     },
     {
-        key: 'system__full_id',
+        key: 'system__fullId',
         label: 'Full item ID',
+        type: 'string',
+    },
+    {
+        key: 'system__languageId',
+        label: 'Language ID',
+        type: 'string',
+    },
+    {
+        key: 'system__workflowStepId',
+        label: 'Workflow step ID',
+        type: 'string',
+    },
+    {
+        key: 'system__contentTypeId',
+        label: 'Content type ID',
         type: 'string',
     },
 ];

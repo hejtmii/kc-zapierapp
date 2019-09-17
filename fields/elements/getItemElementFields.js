@@ -1,6 +1,6 @@
 const getContentTypeElements = require('./getContentTypeElements');
 
-async function getItemElementFields(z, bundle, contentType) {
+async function getItemElementFields(z, bundle, contentTypeId) {
 
     function getField(element, extra) {
         const base = {
@@ -40,7 +40,7 @@ async function getItemElementFields(z, bundle, contentType) {
         }
     }
 
-    const elements = await getContentTypeElements(z, bundle, contentType);
+    const elements = await getContentTypeElements(z, bundle, contentTypeId);
     const fields = elements.map(getSimpleElementField);
 
     return fields;

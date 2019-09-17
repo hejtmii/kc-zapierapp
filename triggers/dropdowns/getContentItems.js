@@ -1,12 +1,14 @@
 const handleErrors = require('../../utils/handleErrors');
+const contentItemSample = require('../../fields/contentItemSample');
+const standardizedSystemOutputFields = require('../../fields/standardizedSystemOutputFields');
 
 async function execute(z, bundle) {
     const options = {
-        url: `https://preview-deliver.kenticocloud.com/${bundle.authData.project_id}/items`,
+        url: `https://preview-deliver.kontent.ai/${bundle.authData.projectId}/items`,
         method: 'GET',
         headers: {
             'Accept': 'application/json',
-            'Authorization': `Bearer ${bundle.authData.preview_api_key}`
+            'Authorization': `Bearer ${bundle.authData.previewApiKey}`
         },
         params: {
             'order': 'system.name[asc]',
@@ -22,6 +24,7 @@ async function execute(z, bundle) {
 
     const results = z.JSON.parse(response.content).items;
 
+    // TODO - Standardize model
     const resultsWithId = results.map(
         (item) => Object.assign(
             item,
@@ -34,7 +37,7 @@ async function execute(z, bundle) {
     return resultsWithId;
 }
 
-const getContentItems = {
+module.exports = {
     noun: "Content item",
     display: {
         hidden: true,
@@ -45,53 +48,8 @@ const getContentItems = {
     key: "get_content_items",
     operation: {
         perform: execute,
-        sample: {
-            elements: {},
-            system: {
-                name: "A Chemex Method",
-                    language: "en-US",
-                    sitemap_locations: [],
-                    last_modified: "2017-06-27T12:56:41.1882715Z",
-                    codename: "a_chemex_method",
-                    type: "hosted_video",
-                    id: "e9b81664-cbca-4f0e-b1c8-e7d862f4fd89"
-            },
-            id: "e9b81664-cbca-4f0e-b1c8-e7d862f4fd89;en-US"
-        },
+        sample: contentItemSample,
         canPaginate: true,
-            outputFields: [
-            {
-                key: "system__name",
-                label: "Item name"
-            },
-            {
-                key: "system__language",
-                label: "Language codename"
-            },
-            {
-                type: "datetime",
-                key: "system__last_modified",
-                label: "Last modified"
-            },
-            {
-                key: "system__codename",
-                label: "Item codename"
-            },
-            {
-                key: "system__type",
-                label: "Content type codename"
-            },
-            {
-                key: "system__id",
-                label: "Item ID"
-            },
-            {
-                type: "string",
-                key: "id",
-                label: "Compound item ID"
-            }
-        ]
+        outputFields: standardizedSystemOutputFields,
     },
 };
-
-module.exports = getContentItems;

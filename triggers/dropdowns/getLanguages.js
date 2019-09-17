@@ -1,30 +1,17 @@
-const handleErrors = require('../../utils/handleErrors');
+const getLanguages = require('../../utils/languages/getLanguages');
 
 async function execute(z, bundle) {
-    const options = {
-        url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/languages`,
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${bundle.authData.cm_api_key}`
-        },
-        params: {}
-    };
+    const languages = getLanguages(z, bundle);
 
-    const response = await z.request(options);
-    handleErrors(response);
-
-    const results = z.JSON.parse(response.content).languages;
-
-    return results;
+    return languages;
 }
 
-const getLanguages = {
+module.exports = {
     noun: "Language",
     display: {
         hidden: true,
         important: false,
-        description: "Gets languages for the input dropdown, in the order, in which they are defined in Kentico Cloud.",
+        description: "Gets languages for the input dropdown, in the order, in which they are defined in Kentico Kontent.",
         label: "Get Languages"
     },
     key: "get_languages",
@@ -51,5 +38,3 @@ const getLanguages = {
         ]
     },
 };
-
-module.exports = getLanguages;

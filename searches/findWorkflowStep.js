@@ -1,30 +1,13 @@
 const handleErrors = require('../utils/handleErrors');
+const getWorkflowSteps = require('../utils/workflows/getWorkflowSteps');
 
 async function execute(z, bundle) {
-    async function getWorkflowSteps() {
-        const options = {
-            url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/workflow`,
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${bundle.authData.cm_api_key}`
-            },
-            params: {}
-        };
-
-        const response = await z.request(options);
-        handleErrors(response);
-
-        const results = z.JSON.parse(response.content);
-        return results;
-    }
-
     async function findWorkflowStep(stepName) {
         if (!stepName) {
             return [];
         }
 
-        const workflowSteps = await getWorkflowSteps();
+        const workflowSteps = await getWorkflowSteps(z, bundle);
         const search = stepName.toLowerCase();
 
         const fullMatch = workflowSteps.filter(step => step.name.toLowerCase() === search);
@@ -36,7 +19,7 @@ async function execute(z, bundle) {
         return partialMatch;
     }
 
-    const stepName = bundle.inputData.name;
+    const stepName = bundle.inputData.stepName;
 
     const found = await findWorkflowStep(stepName);
 
@@ -44,7 +27,7 @@ async function execute(z, bundle) {
 }
 
 const findWorkflowStep = {
-    noun: 'Workflow step',
+    noun: 'Workflow step search',
     display: {
         hidden: false,
         important: false,
@@ -57,7 +40,7 @@ const findWorkflowStep = {
         inputFields: [
             {
                 label: 'Step name',
-                key: 'name',
+                key: 'stepName',
                 helpText: 'Name of the workflow step, the search is case insensitive. If exact match is not found, searches as a substring.',
                 type: 'string',
                 required: true,

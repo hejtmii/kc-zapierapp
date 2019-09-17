@@ -1,30 +1,17 @@
-const handleErrors = require('../../utils/handleErrors');
+const getWorkflowSteps = require('../../utils/workflows/getWorkflowSteps');
 
 async function execute(z, bundle) {
-    const options = {
-        url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/workflow`,
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${bundle.authData.cm_api_key}`
-        },
-        params: {}
-    };
+    const workflowSteps = await getWorkflowSteps(z, bundle);
 
-    const response = await z.request(options);
-    handleErrors(response);
-
-    const results = z.JSON.parse(response.content);
-
-    return results;
+    return workflowSteps;
 }
 
-const getWorkflowSteps = {
+module.exports = {
     noun: "Workflow step",
     display: {
         hidden: true,
         important: false,
-        description: "Gets workflow steps for the input dropdown, in the order, in which they are defined in Kentico Cloud.",
+        description: "Gets workflow steps for the input dropdown, in the order, in which they are defined in Kentico Kontent.",
         label: "Get Workflow Steps"
     },
     key: "get_workflow_steps",
@@ -47,5 +34,3 @@ const getWorkflowSteps = {
         ]
     },
 };
-
-module.exports = getWorkflowSteps;

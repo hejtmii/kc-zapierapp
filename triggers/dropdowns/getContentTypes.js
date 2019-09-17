@@ -1,24 +1,9 @@
-const handleErrors = require('../../utils/handleErrors');
+const getContentTypes = require('../../utils/types/getContentTypes');
 
 async function execute(z, bundle) {
-    const options = {
-        url: `https://preview-deliver.kenticocloud.com/${bundle.authData.project_id}/types`,
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${bundle.authData.preview_api_key}`
-        },
-        params: {
-            'order': 'system.name[asc]'
-        }
-    }
+    const contentTypes = await getContentTypes(z, bundle);
 
-    const response = await z.request(options);
-    handleErrors(response);
-
-    const results = z.JSON.parse(response.content).types;
-
-    const resultsWithId = results.map(
+    const resultsWithId = contentTypes.map(
         (item) => Object.assign(
             item,
             {

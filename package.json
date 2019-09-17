@@ -1,9 +1,9 @@
 {
-  "name": "kentico-cloud-cli",
+  "name": "kentico-kontent",
   "version": "1.0.0",
-  "description": "An app for Kentico Cloud headless content management system.",
+  "description": "An app for Kentico Kontent headless content management system.",
   "repository": "kenticomartinh/kc-zapierapp",
-  "homepage": "https://kenticocloud.com/",
+  "homepage": "https://kontent.ai/",
   "author": "Martin Hejtmanek <martinh@kentico.com>",
   "license": "MIT",
   "main": "index.js",

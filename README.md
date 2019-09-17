@@ -1,3 +1,3 @@
-# Source code of Zapier Application for Kentico Cloud
+# Source code of Zapier Application for Kentico Kontent
 
 More information TBD

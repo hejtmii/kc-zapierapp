@@ -1,5 +1,5 @@
-const handleErrors = require('../utils/handleErrors');
-const getContentTypeElements = require('../fields/elements/getContentTypeElements');
+const handleErrors = require('../../handleErrors');
+const getContentTypeElements = require('../../../fields/elements/getContentTypeElements');
 
 function getElementValue(value, element) {
     switch (element.type) {
@@ -11,33 +11,25 @@ function getElementValue(value, element) {
 
         case 'text':
         case 'custom':
-            return value;
-
         case 'number':
-            return value;
-
         case 'date_time':
+        case 'url_slug':
             return value;
 
         case 'multiple_choice':
         case 'asset':
         case 'modular_content':
         case 'taxonomy':
-            return value;
-
-        case 'url_slug':
-            return value;
+            return value && value.map(item => ({ id: item }));
 
         case 'guidelines':
-            return undefined;
-
         default:
-            throw new Error(`Unknown element type ${element.type}`);
+            return undefined;
     }
 }
 
-async function getElements(z, bundle, contentType) {
-    const typeElements = await getContentTypeElements(z, bundle, contentType);
+async function getElements(z, bundle, contentTypeId) {
+    const typeElements = await getContentTypeElements(z, bundle, contentTypeId);
     const elements = typeElements.map((element) => {
         const value = bundle.inputData[`elements__${element.codename}`];
         if (!value) {
@@ -54,16 +46,16 @@ async function getElements(z, bundle, contentType) {
     return elements;
 }
 
-async function createVariant(z, bundle, itemId, language, contentType) {
-    const elements = await getElements(z, bundle, contentType);
+async function createVariant(z, bundle, itemId, languageId, contentTypeId) {
+    const elements = await getElements(z, bundle, contentTypeId);
 
     const options = {
-        url: `https://manage.kenticocloud.com/v2/projects/${bundle.authData.project_id}/items/${itemId}/variants/codename/${language}`,
+        url: `https://manage.kontent.ai/v2/projects/${bundle.authData.projectId}/items/${itemId}/variants/${languageId}`,
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': `Bearer ${bundle.authData.cm_api_key}`
+            'Authorization': `Bearer ${bundle.authData.cmApiKey}`
         },
         params: {},
         body: {
